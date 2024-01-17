@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA_Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, inital-scale=1.0" />
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+
+        <title>Document</title>
+        <link rel = "stylesheet" href= "{{ url_for('static', filename='styles.css')}}"/>
+    </head>
+    <body>
+        <script>
+            setInterval(function () { 
+                const time =  new Date()
+                let year = time.getFullYear()
+                let month = time.getMonth() + 1
+                let day = time.getDay() + 7
+                let hour = time.getHours()
+                let min = time.getMinutes()
+                let sec = time.getSeconds()
+
+                if (sec < 10){
+                   
+                    sec = '0' + sec
+                }
+                if (min < 10){
+                   
+                    min = '0' + min
+                }
+                if (hour > 12)
+                {
+                    hour = hour - 12
+                }
+                if (hour < 10){
+                   
+                    hour = '0' + hour
+                }
+                if (month < 10){
+                    month = '0' + month
+                }
+                date = month + '/' + day + '/' + year
+                cur_time = hour + ':' + min + ':' + sec
+                document.getElementById("date").innerHTML = date;
+                document.getElementById("time").innerHTML = cur_time;
+             }, 1000);            
+        </script>
+        <body>
+            <h3><span id="date"></span><br><span id="time"></span></h3>
+        </body>
+
+        <h1> Python </h1>
+        <script>
+        var socket = io.connect();
+        socket.on("updateData", function (msg) {
+            document.getElementById("quote").innerHTML = msg.quote;
+            })
+
+        </script>
+        <p id="quote"></p>
+
+        <h1>JavaScript</h1>
+    
+
+        </script>
+    
+    </body>
+
+</html>
+
+
