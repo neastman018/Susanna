@@ -4,7 +4,8 @@ from random import random
 
 
 scope =["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("C:/Users/neast/Documents/Susan/secret_key.json", scopes=scope)
+
+creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
 client = gspread.authorize(creds)
 sheet = client.open('Susan_Saint_Quotes').sheet1
