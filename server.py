@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, render_template, request
 from flask_socketio import SocketIO
 from threading import Lock
 from datetime import datetime 
+import RPi.GPIO as GPIO 
 from sheets.saintquote import pick_quote
 from alarm.alarm import play_alarm, init_alarm, stop_alarm
 
@@ -28,6 +29,14 @@ def background_thread():
     alarm = init_alarm('Good_MorningV2.mp3')
     global stop
     stop = False
+    buttonPin = 10
+
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  
+
+
+
     while True:
         now = datetime.now()
         if now.second % 20 == 0:
@@ -35,17 +44,18 @@ def background_thread():
             #print(quote_picked)
 
 
-        play_alarm(alarm, 7, 52, 0)
+        play_alarm(alarm, 9, 15, 0)
         stop_alarm(alarm, stop)
 
-        if now.second == 30:
+
+        if GPIO.input(buttonPin) == GPIO.HIGH:
             stop = True
         else: 
             stop = False
 
         print(stop)
         socketio.emit('updateData', {'quote': quote_picked})
-        socketio.sleep(1)
+        socketio.sleep(0.2)
     
     
 
