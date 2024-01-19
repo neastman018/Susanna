@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from threading import Lock
 from datetime import datetime 
 from sheets.saintquote import pick_quote
-from alarm.alarm import play_alarm
+from alarm.alarm import play_alarm, init_alarm, stop_alarm
 
 
 """
@@ -25,12 +25,25 @@ to send to the javascript.
 def background_thread():
     alarm_active = False
     quote_picked = pick_quote()
+    alarm = init_alarm('Good_MorningV2.mp3')
+    global stop
+    stop = False
     while True:
         now = datetime.now()
         if now.second % 20 == 0:
             quote_picked = pick_quote()
+            #print(quote_picked)
 
-        play_alarm(22, 5, alarm_sound='Good_MorningV2.mp3')
+
+        play_alarm(alarm, 7, 52, 0)
+        stop_alarm(alarm, stop)
+
+        if now.second == 30:
+            stop = True
+        else: 
+            stop = False
+
+        print(stop)
         socketio.emit('updateData', {'quote': quote_picked})
         socketio.sleep(1)
     
@@ -69,4 +82,4 @@ def disconnect():
     print('Client disconnected',  request.sid)
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host='0.0.0.0', port=80)
+    socketio.run(app, debug=True, host='0.0.0.0', port=8000)
