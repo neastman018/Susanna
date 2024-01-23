@@ -1,10 +1,13 @@
 from flask import Flask, redirect, url_for, render_template, request
 from flask_socketio import SocketIO
 from threading import Lock
+from dataclasses import dataclass
 from datetime import datetime 
+import time
+import RPi.GPIO as GPIO
 import RPi.GPIO as GPIO 
 from sheets.saintquote import pick_quote
-from alarm.alarm import play_alarm, init_alarm, stop_alarm
+from alarm.alarm import play_alarm, init_alarm
 
 
 """
@@ -19,14 +22,47 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 #app.register_blueprint(second, url_prefix="")
 
+
+@dataclass
+class Susanna:
+    b1_debounce: int
+    stop: bool
+    alarm_active: bool
+    quote: str
+
+    def __init__(self, b1_debounce, stop, alarm_active, quote, b1pin):
+        self.b1_debounce = b1_debounce
+        self.stop = stop
+        self.alarm_active = alarm_active
+        self.quote = quote
+        self.b1pin = b1pin
+
+def init_Susanna():
+    suzy = Susanna(
+        b1_debounce = time.time(), 
+        stop = False, 
+        alarm_active = True, 
+        quote=pick_quote(),
+        b1pin = 10
+        )
+    print("Susanna has been activated")
+
+    return suzy
+
+
+
 """
 In Background Thread loop whatever code you want to run continously. Then at the end have it emit the data you want
 to send to the javascript.
 """
 def background_thread():
-    alarm_active = False
-    quote_picked = pick_quote()
+    # Initalization Functions
+    susanna = init_Susanna()
     alarm = init_alarm('Good_MorningV2.mp3')
+
+    """
+    Program that Continously Loops
+    """
     global stop
     stop = False
     buttonPin = 10
@@ -39,23 +75,27 @@ def background_thread():
 
     while True:
         now = datetime.now()
-        if now.second % 20 == 0:
-            quote_picked = pick_quote()
+        susanna.b1_debounce = time.time()
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BOARD)
+        #GPIO.setup(susanna.b1pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        if now.second % 20 == 0 and now.microsecond > 200000:
+            susanna.quote = pick_quote()
             #print(quote_picked)
 
 
+        play_alarm(alarm, susanna.stop, 16, 9, 0)
+
+        if now.second == 30:
+            susanna.stop = True
+            
         play_alarm(alarm, 9, 15, 0)
         stop_alarm(alarm, stop)
 
 
-        if GPIO.input(buttonPin) == GPIO.HIGH:
-            stop = True
-        else: 
-            stop = False
-
-        print(stop)
-        socketio.emit('updateData', {'quote': quote_picked})
-        socketio.sleep(0.2)
+        #print(stop)
+        socketio.emit('updateData', {'quote': susanna.quote, 'processor_time': susanna.b1_debounce})
+        socketio.sleep(.2)
     
     
 
