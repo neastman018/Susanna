@@ -21,11 +21,3 @@ while alarm.get_busy() == True:
 #alarm = multiprocessing.Process(target=playsound, args=("alarm/music/" + alarm_sound,))"""
 
 
-now = datetime.now()
-print(now.microsecond)
-time.sleep(.1)
-while True:
-    now = datetime.now()
-    print(now.microsecond)
-    time.sleep(.1)
-

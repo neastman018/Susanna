@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime 
 import time
 import RPi.GPIO as GPIO
-import RPi.GPIO as GPIO 
+from button.button import Button
 from sheets.saintquote import pick_quote
 from alarm.alarm import play_alarm, init_alarm
 
@@ -23,28 +23,21 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 #app.register_blueprint(second, url_prefix="")
 
 
-@dataclass
 class Susanna:
-    b1_debounce: int
-    stop: bool
-    alarm_active: bool
-    quote: str
-
-    def __init__(self, b1_debounce, stop, alarm_active, quote, b1pin):
-        self.b1_debounce = b1_debounce
-        self.stop = stop
-        self.alarm_active = alarm_active
-        self.quote = quote
-        self.b1pin = b1pin
+    def __init__(self, button, stop, alarm_active, quote):
+        self.button : Button = button
+        self.stop : bool = stop
+        self.alarm_active : bool = alarm_active
+        self.quote : str = quote
 
 def init_Susanna():
     suzy = Susanna(
-        b1_debounce = time.time(), 
+        button = Button(),
         stop = False, 
         alarm_active = True, 
         quote=pick_quote(),
-        b1pin = 10
         )
+    
     print("Susanna has been activated")
 
     return suzy
@@ -63,38 +56,23 @@ def background_thread():
     """
     Program that Continously Loops
     """
-    global stop
-    stop = False
-    buttonPin = 10
-
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  
-
-
-
     while True:
         now = datetime.now()
-        susanna.b1_debounce = time.time()
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BOARD)
-        #GPIO.setup(susanna.b1pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        susanna.stop = susanna.button.button_press()
+        print(susanna.stop)
         if now.second % 20 == 0 and now.microsecond > 200000:
             susanna.quote = pick_quote()
             #print(quote_picked)
-
 
         play_alarm(alarm, susanna.stop, 16, 9, 0)
 
         if now.second == 30:
             susanna.stop = True
-            
-        play_alarm(alarm, 9, 15, 0)
-        stop_alarm(alarm, stop)
-
+        else: 
+            susanna.stop = False
 
         #print(stop)
-        socketio.emit('updateData', {'quote': susanna.quote, 'processor_time': susanna.b1_debounce})
+        socketio.emit('updateData', {'quote': susanna.quote, 'processor_time': susanna.button.state})
         socketio.sleep(.2)
     
     
