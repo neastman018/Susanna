@@ -32,7 +32,7 @@ class Susanna:
 
 def init_Susanna():
     suzy = Susanna(
-        button = Button(),
+        button = Button(pin=10),
         stop = False, 
         alarm_active = True, 
         quote=pick_quote(),
