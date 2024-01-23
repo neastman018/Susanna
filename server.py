@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime 
 import time
 import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO 
 from sheets.saintquote import pick_quote
 from alarm.alarm import play_alarm, init_alarm
 
@@ -62,6 +63,16 @@ def background_thread():
     """
     Program that Continously Loops
     """
+    global stop
+    stop = False
+    buttonPin = 10
+
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  
+
+
+
     while True:
         now = datetime.now()
         susanna.b1_debounce = time.time()
@@ -77,8 +88,10 @@ def background_thread():
 
         if now.second == 30:
             susanna.stop = True
-        else: 
-            susanna.stop = False
+            
+        play_alarm(alarm, 9, 15, 0)
+        stop_alarm(alarm, stop)
+
 
         #print(stop)
         socketio.emit('updateData', {'quote': susanna.quote, 'processor_time': susanna.b1_debounce})
