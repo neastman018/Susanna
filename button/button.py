@@ -11,7 +11,7 @@ class Button:
     @parameter state is whichever state variable the button is controlling
     @parameter last_press in the time of the last button press for debounce purposes
     """
-    def __init__(self, pin = 0, state = False, last_press = time.time(), debounce : float  = 0.2):
+    def __init__(self, pin = 0, state = False, last_press = time.time(), debounce : float  = 0.05):
         self.pin = pin
         self.state = state
         self.last_press = last_press

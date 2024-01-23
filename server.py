@@ -38,6 +38,7 @@ def init_Susanna():
         quote=pick_quote(),
         )
     
+    suzy.button.init_button(10)
     print("Susanna has been activated")
 
     return suzy
