@@ -21,35 +21,29 @@ def init_alarm(alarm_sound):
     alarm.load("alarm/music/" + alarm_sound)
     return alarm
 
-
 """
 Method to play the alarm
 @parameter alarm: return of the init_alarm function which is a initalized alarm with a song loaded
 @parameter alarm_time_hour: hour the alarm should go off (24 hour time)
 @parameter alarm_time_minute: minute the alarm should go off
 @parameter alarm_time_second: minute the alarm should go off (will be 00 by default)
+@parameter stop: boolean value to stop the alarm
 """
-def play_alarm(alarm, alarm_time_hour, alarm_time_minute, alarm_time_second = 1):
+def play_alarm(alarm, stop, alarm_time_hour, alarm_time_minute, alarm_time_second = 1):
     now = datetime.now()
     #now.second does not register 0
     if alarm_time_second == 0:
         alarm_time_second = 1
 
-    if alarm_time_hour == now.hour and alarm_time_minute == now.minute and alarm_time_second == now.second:
-         print("alarm is playing")
-         alarm.play()
+    if alarm_time_hour == now.hour and alarm_time_minute == now.minute and alarm_time_second == now.second and not alarm.get_busy():
+        print(alarm.get_busy())
+        alarm.play()
 
-
-
-"""
-Method to stop an alarm
-@parameter alarm: return of the init_alarm function which is a initalized alarm with a song loaded
-@parameter stop: boolean value to stop the alarm
-"""
-def stop_alarm(alarm, stop = False):
     if stop is True:
         print("alarm is stopping")
         alarm.pause()
+
+
 
 
           
