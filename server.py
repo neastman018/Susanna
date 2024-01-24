@@ -69,6 +69,7 @@ def background_thread():
     while True:
         now = datetime.now()
         susanna.alarm.play_alarm()
+        susanna.button.button_press()
         
         if now.second % 20 == 0 and now.microsecond > 100000:
             susanna.quote = pick_quote()
