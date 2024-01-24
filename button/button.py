@@ -11,9 +11,10 @@ class Button:
     @parameter state is whichever state variable the button is controlling
     @parameter last_press in the time of the last button press for debounce purposes
     """
-    def __init__(self, pin = 0, state = False, last_press = time.time(), debounce : float  = 0.05):
+    def __init__(self, pin = 0, state = False, pressed = False, last_press = time.time(), debounce : float  = 0.05):
         self.pin = pin
         self.state = state
+        self.pressed = pressed
         self.last_press = last_press
         self.debounce = debounce
         self.button = None
@@ -21,9 +22,7 @@ class Button:
         Method to inialize the button
         @parameter pin is the pin number that the button is hooked up to
         """
-    def init_button(self, button_pin):
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BOARD)
+    def init_button(self):
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     """
@@ -31,8 +30,11 @@ class Button:
 
     """ 
     def button_press(self) -> bool:
-        if GPIO.input(self.pin) == GPIO.HIGH and (time.time() - self.last_press) >= self.debounce:
+        if GPIO.input(self.pin) == GPIO.HIGH and (time.time() - self.last_press) >= self.debounce and not self.pressed:
+            self.pressed = True
             self.last_press = time.time()
-            self.state = not self.state
+
+        if GPIO.input(self.pin) == GPIO.LOW and self.pressed:
+            self.pressed = False
 
         return self.state

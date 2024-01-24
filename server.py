@@ -4,10 +4,11 @@ from threading import Lock
 from dataclasses import dataclass
 from datetime import datetime 
 import time
+import pygame
 import RPi.GPIO as GPIO
 from button.button import Button
 from sheets.saintquote import pick_quote
-from alarm.alarm import play_alarm, init_alarm
+from alarm.alarm import Alarm
 
 
 """
@@ -24,21 +25,28 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 
 class Susanna:
-    def __init__(self, button, stop, alarm_active, quote):
+    def __init__(self, button, alarm, quote):
         self.button : Button = button
-        self.stop : bool = stop
-        self.alarm_active : bool = alarm_active
+        self.alarm : Alarm = alarm
         self.quote : str = quote
 
 def init_Susanna():
+
+    # Initalize GPIO
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
+
+    # Initalize Alarms
+    pygame.mixer.init()
+
     suzy = Susanna(
         button = Button(pin=10),
-        stop = False, 
-        alarm_active = True, 
+        alarm = Alarm(hour=12, minute=53, second=0),
         quote=pick_quote(),
         )
-    
-    suzy.button.init_button(10)
+
+    suzy.button.init_button()
+    suzy.alarm.init_alarm('Good_MorningV2.mp3')
     print("Susanna has been activated")
 
     return suzy
@@ -51,30 +59,31 @@ to send to the javascript.
 """
 def background_thread():
     # Initalization Functions
+
     susanna = init_Susanna()
-    alarm = init_alarm('Good_MorningV2.mp3')
+
 
     """
     Program that Continously Loops
     """
     while True:
         now = datetime.now()
-        susanna.stop = susanna.button.button_press()
-        print(susanna.stop)
-        if now.second % 20 == 0 and now.microsecond > 200000:
+        susanna.alarm.play_alarm()
+        
+        if now.second % 20 == 0 and now.microsecond > 100000:
             susanna.quote = pick_quote()
             #print(quote_picked)
 
-        play_alarm(alarm, susanna.stop, 16, 9, 0)
+        
 
         if now.second == 30:
-            susanna.stop = True
+            susanna.alarm.stop = True
         else: 
-            susanna.stop = False
+            susanna.alarm.stop = False
 
         #print(stop)
         socketio.emit('updateData', {'quote': susanna.quote, 'processor_time': susanna.button.state})
-        socketio.sleep(.2)
+        socketio.sleep(.1)
     
     
 

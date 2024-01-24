@@ -15,11 +15,6 @@ Function to inteperate time
 Method to initalize the alarm
 @parameter alarm_sound: music file to play
 """
-def init_alarm(alarm_sound):
-    pygame.mixer.init()
-    alarm = pygame.mixer.music
-    alarm.load("alarm/music/" + alarm_sound)
-    return alarm
 
 """
 Method to play the alarm
@@ -29,19 +24,45 @@ Method to play the alarm
 @parameter alarm_time_second: minute the alarm should go off (will be 00 by default)
 @parameter stop: boolean value to stop the alarm
 """
-def play_alarm(alarm, stop, alarm_time_hour, alarm_time_minute, alarm_time_second = 1):
-    now = datetime.now()
-    #now.second does not register 0
-    if alarm_time_second == 0:
-        alarm_time_second = 1
 
-    if alarm_time_hour == now.hour and alarm_time_minute == now.minute and alarm_time_second == now.second and not alarm.get_busy():
-        print(alarm.get_busy())
-        alarm.play()
+class Alarm:
 
-    if stop is True:
-        print("alarm is stopping")
-        alarm.pause()
+    def __init__(self, alarm = pygame.mixer.music, stop = False, active = False, hour = 0, minute = 0, second = 1, playing = False):
+        self.alarm = alarm
+        self.stop = stop
+        self.active = active
+        self.hour = hour
+        self.minute = minute
+        self.second = second
+        self.playing = playing
+
+        
+
+
+    def init_alarm(self, alarm_sound):
+        self.alarm.load("alarm/music/" + alarm_sound)
+    
+    def is_active(self) -> bool:
+        return self.alarm.get_busy()
+        
+
+    def play_alarm(self):
+        now = datetime.now()
+        #now.second does not register 0
+        if self.second == 0:
+            self.second = 1
+
+        if self.hour == now.hour and self.minute == now.minute and self.second == now.second and not self.is_active():
+            print(self.is_active())
+            self.playing = True
+            self.alarm.play()
+
+        if self.stop is True:
+            print("alarm is stopping")
+            self.playing = False
+            self.alarm.pause()
+
+        return self.playing
 
 
 
