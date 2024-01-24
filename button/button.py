@@ -33,6 +33,7 @@ class Button:
         if GPIO.input(self.pin) == GPIO.HIGH and (time.time() - self.last_press) >= self.debounce and not self.pressed:
             self.pressed = True
             self.last_press = time.time()
+            self.state = not self.state
 
         if GPIO.input(self.pin) == GPIO.LOW and self.pressed:
             self.pressed = False
