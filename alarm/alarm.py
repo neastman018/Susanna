@@ -46,7 +46,7 @@ class Alarm:
         return self.alarm.get_busy()
         
 
-    def play_alarm(self):
+    def play_alarm(self) -> bool:
         now = datetime.now()
         #now.second does not register 0
         if self.second == 0:
@@ -57,7 +57,7 @@ class Alarm:
             self.playing = True
             self.alarm.play()
 
-        if self.stop is True:
+        if self.stop and self.is_active():
             print("alarm is stopping")
             self.playing = False
             self.alarm.pause()
