@@ -57,14 +57,22 @@
         var socket = io.connect();
         socket.on("updateData", function (msg) {
             document.getElementById("quote").innerHTML = msg.quote;
-            document.getElementById("processor_time").innerHTML = msg.processor_time;
+            document.getElementById("Button1").innerHTML = msg.Button1;
+            document.getElementById("Button2").innerHTML = msg.Button2;
+            document.getElementById("Button3").innerHTML = msg.Button3;
             })
 
         </script>
         <p id="quote"></p>
 
-        <h1>JavaScript</h1>
-        <p id="processor_time"></p>
+        <h1>Button 1</h1>
+        <p id="Button1"></p>
+
+        <h1>Button 2</h1>
+        <p id="Button2"></p>
+
+        <h1>Button 3</h1>
+        <p id="Button3"></p>
     
 
         </script>
