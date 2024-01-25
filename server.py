@@ -43,9 +43,9 @@ def init_Susanna():
 
     suzy = Susanna(
         button1 = Button(pin=8),
-        button1 = Button(pin=10),
-        button1 = Button(pin=12),
-        alarm = Alarm(hour=20, minute=45, second=0),
+        button2 = Button(pin=10),
+        button3 = Button(pin=12),
+        alarm = Alarm(hour=20, minute=50, second=0),
         quote=pick_quote(),
         )
 
