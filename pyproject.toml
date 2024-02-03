@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "susanna"
+version = "0.1.0"
+description = "My Person Magic Mirror"
+authors = ["neastman018 <111767985+neastman018@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+flask = "^3.0.1"
+flask-socketio = "^5.3.6"
+google-api-python-client = "^2.115.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.0"
+pygame = "^2.5.2"
+oauth2client = "^4.1.3"
+gspread = "^5.12.4"
+google = "^3.0.0"
+google-auth = "^2.27.0"
+requests = "^2.31.0"
+colorama = "^0.4.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
