@@ -6,7 +6,7 @@ from datetime import datetime
 
 scope =["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name('C:/Users/neast/Susanna/susanna/sheets/skey.json', scopes=scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('sheets\skey.json', scopes=scope)
 
 client = gspread.authorize(creds)
 sheet = client.open('Susan_Saint_Quotes').sheet1
