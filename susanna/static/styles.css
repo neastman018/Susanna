@@ -1,0 +1,46 @@
+* { color: rgb(0, 0, 0);}
+
+h1 { color: rgb(255, 255, 255);
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Baskerville', serif;
+
+    font-size: 50px; }
+
+p { color: rgb(255, 255, 255);
+    text-align: center;
+    font-family: 'Baskerville', serif;
+    font-weight: bold;
+    font-size: 24px;
+    }
+
+h3 { color: rgb(255, 255, 255);
+     text-align: center;
+     font-family: 'Baskerville', serif;
+     font-weight: bold;
+     font-size: 36px;
+    }
+    
+span { color: rgb(255, 255, 255);
+    text-align: center;
+    font-family: 'Baskerville', serif;
+    font-weight: bold;
+    font-size: 36px;
+    }
+body {
+    /*background-image: url("images/Eastman.png");*/
+    background-color: #5d6f40ff; /* Used if the image is unavailable */
+    height: 500px; /* You must set a specified height */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover; /* Resize the background image to cover the entire container */
+   }
+
+.Strait{ color:purple;
+    text-align: right;
+    
+}
+.Taytay{ color: yellowgreen}
+#test{color:maroon}
+
+
