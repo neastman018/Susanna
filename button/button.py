@@ -35,9 +35,11 @@ class Button:
             self.pressed = True
             self.last_press = time.time()
             self.state = not self.state
+            print(1)
 
         if GPIO.input(self.pin) == GPIO.LOW and self.pressed:
             self.pressed = False
+            print(2)
 
         return self.state
     

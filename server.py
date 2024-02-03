@@ -115,7 +115,7 @@ def background_thread():
                                     'Button2': susanna.button2.state,
                                     'Button3': susanna.button3.state,
                                     'Calendar': susanna.alarm.hour})
-        print(f"Button 1: {susanna.button1.state}\nButton 2: {susanna.button2.state}\nButton 3: {susanna.button3.state}")
+        #print(f"Button 1: {susanna.button1.state}\nButton 2: {susanna.button2.state}\nButton 3: {susanna.button3.state}")
         socketio.sleep(.1)
     
     
