@@ -43,6 +43,8 @@ class Alarm:
 
     def init_alarm(self, alarm_sound):
         self.alarm.load("alarm/music/" + alarm_sound)
+
+        print(f"Alarm playing {alarm_sound} is ready")
     
     def is_active(self) -> bool:
         return self.alarm.get_busy()
