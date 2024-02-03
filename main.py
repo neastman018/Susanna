@@ -57,9 +57,9 @@ class Susanna:
 
 
     def check_buttons_update(self):
-        self.button1.button_switch()
-        self.button2.button_switch()
-        self.button3.button_switch()
+        self.button1.state = self.button1.button_switch()
+        self.button2.state = self.button2.button_switch()
+        self.button3.state = self.button3.button_switch()
 
     def toggle_monitor_power(self) -> bool:
         # if self.monitor_power:
