@@ -15,10 +15,11 @@
     <body>
         <script>
             setInterval(function () { 
-                const time =  new Date()
+                time =  new Date()
+                console.log(time)
                 let year = time.getFullYear()
                 let month = time.getMonth() + 1
-                let day = time.getDay() + 7
+                let day = time.getDate()
                 let hour = time.getHours()
                 let min = time.getMinutes()
                 let sec = time.getSeconds()
@@ -60,6 +61,7 @@
             document.getElementById("Button1").innerHTML = msg.Button1;
             document.getElementById("Button2").innerHTML = msg.Button2;
             document.getElementById("Button3").innerHTML = msg.Button3;
+            document.getElementById("Calendar").innerHTML = msg.Calendar;
             })
 
         </script>
@@ -73,6 +75,7 @@
 
         <h1>Button 3</h1>
         <p id="Button3"></p>
+        <p id="Calendar"></p>
     
 
         </script>

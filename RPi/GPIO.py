@@ -26,3 +26,6 @@ def input(value):
 def HIGH(value):
     return 0
 
+def LOW(value):
+    return 0
+

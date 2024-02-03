@@ -6,7 +6,7 @@ from datetime import datetime
 
 scope =["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('C:/Users/neast/Susanna/susanna/sheets/skey.json', scopes=scope)
 
 client = gspread.authorize(creds)
 sheet = client.open('Susan_Saint_Quotes').sheet1
@@ -29,3 +29,11 @@ def shuffle_quotes(interval, sleep_time, now) -> str:
         quote_picked = pick_quote()
         #print(quote_picked)
         return quote_picked
+    
+
+    if __name__ == "__main__":
+        print(pick_quote())
+       
+    
+
+    

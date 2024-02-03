@@ -27,13 +27,15 @@ Method to play the alarm
 
 class Alarm:
 
-    def __init__(self, alarm = pygame.mixer.music, stop = False, active = False, hour = 0, minute = 0, second = 1, playing = False):
+    def __init__(self, alarm = pygame.mixer.music, stop = False, active = False, hour = 0, minute = 0, second = 1, day = 0, month = 0, playing = False):
         self.alarm = alarm
         self.stop = stop
         self.active = active
         self.hour = hour
         self.minute = minute
         self.second = second
+        self.day = day
+        self.month = month
         self.playing = playing
 
         
@@ -41,6 +43,8 @@ class Alarm:
 
     def init_alarm(self, alarm_sound):
         self.alarm.load("alarm/music/" + alarm_sound)
+
+        print(f"Alarm playing {alarm_sound} is ready")
     
     def is_active(self) -> bool:
         return self.alarm.get_busy()
@@ -52,7 +56,7 @@ class Alarm:
         if self.second == 0:
             self.second = 1
 
-        if self.hour == now.hour and self.minute == now.minute and self.second == now.second and not self.is_active():
+        if self.hour == now.hour and self.minute == now.minute and self.second == now.second and self.day == now.day and self.month == now.month and not self.is_active():
             print(self.is_active())
             self.playing = True
             self.alarm.play()
@@ -63,6 +67,11 @@ class Alarm:
             self.alarm.pause()
 
         return self.playing
+    
+
+    if __name__ == "__main__":
+        now = datetime.now()
+        print(now.day)
 
 
 
