@@ -19,7 +19,7 @@ google = "^3.0.0"
 google-auth = "^2.27.0"
 requests = "^2.31.0"
 colorama = "^0.4.6"
-pyqt6 = "^6.6.1"
+PyQt6 = "^6.6.1"
 
 
 [build-system]
