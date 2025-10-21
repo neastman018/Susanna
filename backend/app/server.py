@@ -55,7 +55,7 @@ class AlarmModel(BaseModel):
 async def lifespan(app: FastAPI):
     global button1, poll_task
     
-    with open('config.json', 'r') as config_file:
+    with open('../config.json', 'r') as config_file:
         config = json.load(config_file)
         alarm_sound = config.get('ALARM', {}).get('ALARM_SOUND', [])
         print(f"Wake up time for today: {alarm_sound}")
