@@ -5,7 +5,7 @@
   "main": "electron/main.js",
   "author": "Nick Eastman",
   "scripts": {
-    "dev": "npx concurrently -n \"NEXT,ELECTRON\" -c \"yellow,blue\" --kill-others \"next dev\" \"electron .\"",
+    "dev": "concurrently -n \"NEXT,ELECTRON\" -c \"yellow,blue\" --kill-others \"npx next dev\" \"npx electron .\"",
     "build": "next build && electron-builder",
     "start": "next start",
     "lint": "next lint"
