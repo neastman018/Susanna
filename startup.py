@@ -14,8 +14,8 @@ if __name__ == "__main__":
         file.write("This file was created at " + current_time + "\n")
 
 
-    t1 = Thread(target=run_script, args=("python backend/app/main.py",))
-    t2 = Thread(target=run_script, args=("cd frontend && npm run start",))
+    t1 = Thread(target=run_script, args=("cd backend && uvicorn app.server:app --host 0.0.0.0 --port 4000 --reload",))
+    t2 = Thread(target=run_script, args=("cd frontend && npm run dev",))
 
     t1.start()
     t2.start()
