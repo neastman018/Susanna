@@ -1,0 +1,36 @@
+services: 
+  frontend:
+    build: ./frontend
+    privileged: true 
+    command: npm run start
+    environment:
+     - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix  # Allow access to X11 socket
+      - .:/app  # Mount your application directory (adjust as needed)
+    network_mode: host  # Optional: allows for simpler networking
+    # You may need to add extra options depending on your setup
+    restart: always  # Optional: restart container on failure
+
+  # backend:
+  #   build: ./backend
+  #   volumes:
+  #     - .:/app  # Mount your application directory (adjust as needed)
+  #     - /dev/gpiomem:/dev/gpiomem   # Allow access to GPIO
+  #     - /tmp/.X11-unix:/tmp/.X11-unix  # Allow access to X11 socket
+  #     - /run/user/1000/wayland-0:/run/user/1000/wayland-0  # Allow access to Wayland socket
+  #   environment:
+  #    - DISPLAY=$DISPLAY # Tell backend which display we are using
+  #    - PYTHONUNBUFFERED=1  # Optional: disable output buffering
+  #   devices:
+  #     - /dev/dri:/dev/dri  # Allow access to GPU
+  #     - /dev/vcsm:/dev/vcsm  # Allow access to VideoCore Shared Memory
+  #   privileged: true  # Add this line
+  #   command: python app/main.py
+  #   network_mode: host  # Optional: allows for simpler networking
+  #   # You may need to add extra options depending on your setup
+  #   extra_hosts:  # Allow backend to use the host's hostname resolution
+  #     - "host.docker.internal:host-gateway"  
+
+
+

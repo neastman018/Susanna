@@ -1,0 +1,26 @@
+{
+    "ALARM": {
+        "ALARM_SOUND": "Thats_Life.mp3",            
+        "WAKE_UP_TIMES": {
+            "SUNDAY": "7:00",
+            "MONDAY": "5:30",
+            "TUESDAY": "5:30",
+            "WEDNESDAY": "5:30",
+            "THURSDAY": "5:30",
+            "FRIDAY": "5:30",
+            "SATURDAY": "7:00"
+        }
+    },
+    "WEATHER": {
+        "LATITUDE": 38.93368707829988, 
+        "LONGITUDE": -77.1774930079404
+    },
+    "CALENDARS": {
+        "PRIMARY": [
+            {
+                "NAME": "Personal",
+                "ICAL_URL": "https://calendar.google.com/calendar/ical/nick.eastman%40youthapostles.org/private-4b21c6bc916ece0b6ced8f9227dfad14/basic.ics"
+            }
+        ]
+    }   
+}

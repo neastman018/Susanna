@@ -1,0 +1,7 @@
+.breakline{
+  width: 75%;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 1);
+  margin: 2px 0;
+  margin-left: 4px;  
+}

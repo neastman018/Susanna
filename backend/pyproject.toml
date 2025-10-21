@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "smartdisplay"
+version = "0.1.0"
+description = "magicmirror smartdisplay"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+datetime = "^5.5"
+encoder = "^1.1"
+mylib = "^0.0.1"
+pygame = "^2.6.1"
+RPi.GPIO = "^0.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,36 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron/main.js",
+  "author": "Nick Eastman",
+  "scripts": {
+    "dev": "concurrently -n \"NEXT,ELECTRON\" -c \"yellow,blue\" --kill-others \"next dev\" \"electron .\"",
+    "build": "next build && electron-builder",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/inter": "^5.2.6",
+    "@fontsource/roboto": "^5.2.6",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.2.0",
+    "electron-serve": "^2.1.1",
+    "googleapis": "^160.0.0",
+    "ical": "^0.8.0",
+    "next": "^15.4.5",
+    "node-ical": "^0.20.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "concurrently": "^9.1.2",
+    "electron": "^34.0.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6"
+  }
+}

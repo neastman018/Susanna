@@ -1,0 +1,17 @@
+{
+    "weather": {
+        "City": "McLean",
+        "lat": 38.934,
+        "lon": -77.179
+    },
+
+    "wake_up_times": {
+        "Monday": "07:00",
+        "Tuesday": "07:00",
+        "Wednesday": "07:00",
+        "Thursday": "07:00",
+        "Friday": "07:00",
+        "Saturday": "08:00",
+        "Sunday": "08:00"
+    }
+}

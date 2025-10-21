@@ -1,0 +1,21 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6rem;
+  min-height: 100vh;
+  background-color: black;
+  /* background-image: url('/Eastman.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; */
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
