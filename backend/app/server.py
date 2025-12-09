@@ -12,9 +12,18 @@ from fastapi.responses import JSONResponse
 import json
 from app.alarm.alarm import Alarm
 from app.quotes.quotes import get_random_quote
-import RPi.GPIO as GPIO
 import asyncio
-from app.button.button import Button, wait_for_button_state_change, button_poll_task
+from app.button.button import Button, wait_for_button_state_change, button_poll_task, fake_button_poll_task
+
+on_Pi = True
+try:
+    import RPi.GPIO as GPIO
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+except ImportError:
+    on_Pi = False
+    GPIO = None
+    print("RPi.GPIO not found. Running in non-Raspberry Pi mode.")
 
 PIN1= 6
 PIN2 = 5
@@ -23,8 +32,7 @@ ROTARY_PIN = 4
 NUM_PIXELS = 60
 DEFAULT_COLOR = (255, 255, 255)
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
+
 
 test_alarm = Alarm()
 button1: Button = None       # <--- Declared, but NOT initialized here
@@ -60,23 +68,32 @@ async def lifespan(app: FastAPI):
         alarm_sound = config.get('ALARM', {}).get('ALARM_SOUND', [])
         print(f"Wake up time for today: {alarm_sound}")
         
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    
-    button1 = Button(pin=PIN1)
-    button1.init_button()
-    # Startup code can go here
-    test_alarm.init("Peaky_Blinders.mp3")
+    if on_Pi:
+        button1 = Button(pin=PIN1)
+        button1.init_button()
+        # Startup code can go here
+        test_alarm.init("Peaky_Blinders.mp3")
 
-    poll_task = asyncio.create_task(button_poll_task(button1))
-    print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
-    
-    yield
-    # 🧹 SHUTDOWN: Cleanup Resources
-    print("Executing shutdown routine...")
-    if poll_task:
-        poll_task.cancel()
-    GPIO.cleanup()
+        poll_task = asyncio.create_task(button_poll_task(button1))
+        print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
+        
+        yield
+        # 🧹 SHUTDOWN: Cleanup Resources
+        print("Executing shutdown routine...")
+        if poll_task:
+            poll_task.cancel()
+        GPIO.cleanup()
+    else:
+        poll_task = asyncio.create_task(fake_button_poll_task())
+        print(f"{Fore.YELLOW}FastAPI Server Started in non-Raspberry Pi mode!{Style.RESET_ALL}")
+        
+        yield
+        # 🧹 SHUTDOWN: Cleanup Resources
+        print("Executing shutdown routine...")
+        if poll_task:
+            poll_task.cancel()
+            
+            
     
 app = FastAPI(lifespan=lifespan)
 init(autoreset=True)
@@ -111,38 +128,40 @@ app.add_middleware(
 
     
 # manager = ConnectionManager()
+
 # ==========================================================================================================
 # =================================== Backend Events =======================================================
 # ==========================================================================================================
 
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Initializes GPIO and starts the button polling task when the server starts.
-    """
-    global button1
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Initializes GPIO and starts the button polling task when the server starts.
+#     """
+#     global button1
     
-    # Use BCM numbering mode
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
+#     # Use BCM numbering mode
+#     GPIO.setwarnings(False)
+#     GPIO.setmode(GPIO.BCM)
     
-    # Initialize the button on BCM pin 14 (example pin)
-    button1 = Button(pin=14) 
-    button1.init_button()
+#     # Initialize the button on BCM pin 14 (example pin)
+#     button1 = Button(pin=14) 
+#     button1.init_button()
     
-    # Start the continuous polling task as a background task.
-    # This runs the button's synchronous polling logic without blocking the server.
-    asyncio.create_task(button_poll_task(button1))
-    print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
+    
+#     # Start the continuous polling task as a background task.
+#     # This runs the button's synchronous polling logic without blocking the server.
+#     asyncio.create_task(button_poll_task(button1))
+#     print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
 
-@app.on_event("shutdown")
-def shutdown_event():
-    """
-    Cleans up GPIO when the server shuts down.
-    """
-    print(f"{Fore.YELLOW}FastAPI Server shutting down. Cleaning up GPIO.{Style.RESET_ALL}")
-    GPIO.cleanup()
+# @app.on_event("shutdown")
+# def shutdown_event():
+#     """
+#     Cleans up GPIO when the server shuts down.
+#     """
+#     print(f"{Fore.YELLOW}FastAPI Server shutting down. Cleaning up GPIO.{Style.RESET_ALL}")
+#     GPIO.cleanup()
 
 
 # ==========================================================================================================

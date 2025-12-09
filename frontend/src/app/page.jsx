@@ -19,7 +19,7 @@ import Memories from "./modules/memories/memories";
 export default function Home() {
   return (
   <Container className={styles.main} maxWidth={false} spacing={1} disableGutters sx={{padding: 0, margin: 0, width: '100vw', height: '100vh', justifyContent: 'top'}}>
-  <Grid container direction="column" justifyContent="top" sx={{ height: '100%', width: '100%', margin: 0 }}>
+  <Grid container direction="column" justifyContent="flex-start" sx={{ height: '100%', width: '100%', margin: 0 }}>
     {/* Row 1 */}
     <Grid item sx = {{ paddingTop: 2, paddingBottom: 1}}>
       <Grid container direction="row" sx={{ height: '25vh' }}>
@@ -42,24 +42,27 @@ export default function Home() {
           <CalendarEvents icalUrl="https://calendar.google.com/calendar/ical/nick.eastman%40youthapostles.org/public/basic.ics" />
         </Grid>
         <Grid item xs={6} alignContent="center" sx={{width: '50vw', display: 'flex', justifyContent: 'center'}}>
-
+          <Quotes />
         </Grid>
         <Grid item xs={3} alignContent="right" sx={{paddingTop: 2, width: '25vw', display: 'flex', justifyContent: 'right', alignSelf: 'flex-start'}}>
-          <TasksClient />
+          {/* <TasksClient /> */}
         </Grid>
       </Grid>
     </Grid>
 
     {/* Row 3 */}
-    <Grid item  sx={{ paddingBottom: 1, alignItems: 'flex-end'}}>
-      <Grid container direction="row" sx={{ height: '25vh', width: '100%'}}>
-        <Grid item xs={2}></Grid>
-        <Grid item xs={8} sx={{display: 'flex', alignItems: 'flex-end'}}><Quotes /></Grid>
-        <Grid item xs={2}></Grid>
+    <Grid item sx={{flexGrow: 1, height: '25vh' }}>
+      <Grid container direction="row" sx={{height: '100%', width: '100%'}}>
+        <Grid item xs={2} alignContent="left" sx={{paddingTop: 2, width: '25vw', display: 'flex', justifyContent: 'left', alignSelf: 'flex-start'}}>
+        </Grid>
+        <Grid item xs={8} alignContent="center" sx={{display: 'flex', justifyContent: 'center', alignItems: 'flex-end'}}>
+        </Grid>
+        <Grid item xs={2} alignContent="right" sx={{paddingTop: 2, display: 'flex', justifyContent: 'right', alignSelf: 'flex-start'}}>
+        </Grid>
       </Grid>
     </Grid>
   </Grid>
-</Container>
+  </Container>
 
   );
 }

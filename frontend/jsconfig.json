@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // NEW ALIAS: Allows imports like: import config from '@app-config/config.json'
+      "@app-config/*": ["../config.json"]
     }
+
+    
   }
 }

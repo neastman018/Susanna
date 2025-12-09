@@ -10,9 +10,11 @@ import {
   Box
 } from '@mui/material';
 import styles from './calendar.module.css'; // Import your CSS module for styling
-import config from '../../../../../config.json';
+import config from '@app-config/config.json';
+
 
 const icalUrl = config.CALENDARS.PRIMARY.ICAL_URL;
+console.log('Using iCal URL:', icalUrl);
 
 
 const CalendarEvents = () => {
@@ -44,6 +46,7 @@ const CalendarEvents = () => {
     );
   }
 
+  const eventsToFilter = Array.isArray(events) ? events : [];
 
   // Filter events for today only
   const today = new Date();
@@ -57,8 +60,8 @@ const CalendarEvents = () => {
       return start >= today && start < tomorrow;
     })
     .sort((a, b) => new Date(a.start) - new Date(b.start));
-
-
+  
+  console.log("Today's Events:", todaysEvents);
 
   return (
     <Box

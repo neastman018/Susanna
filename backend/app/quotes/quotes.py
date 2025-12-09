@@ -1,22 +1,73 @@
-import random
+import sqlite3
+import os
+from dotenv import load_dotenv
 
-quotes = [
-    "Freedom consists not in doing what we like, but in having the right to do what we ought.",
-    "It is the duty of every man to uphold the dignity of every woman."
-    "Do not be afraid. Do not be satisfied with mediocrity. Put out into the deep and let down your nets for a catch.",           
-    "Pray, hope, and do not worry."
-    "You learn to speak by speaking, to study by studying, to run by running, to work by working; and just so, you learn to love by loving.",
-    
-]
+load_dotenv('.env.development')
+DB_QUOTES_PATH = os.getenv('DB_QUOTES_PATH')
 
-authors = [
-    "Pope John Paul II",
-    "Pope John Paul II",
-    "Pope John Paul II",
-    "Padre Pio",
-    "Saint Francis de Sales"
-]
+print (f"Using quotes database at: {DB_QUOTES_PATH}")
+DB_PATH = 'quotes.db'
+
 
 def get_random_quote():
-    idx = random.randint(0, len(quotes) - 1)
-    return {"quote": quotes[idx], "author": authors[idx]}
+    conn = None
+
+    try:
+        conn = sqlite3.connect(DB_QUOTES_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT saint_name, quote_text FROM quotes
+            ORDER BY RANDOM()
+            LIMIT 1
+        """)
+        
+        row = cursor.fetchone()  
+        
+        if row:
+            return {"quote": row[1], "author": row[0]}     
+         
+    except sqlite3.Error as e:
+        print(f"Error loading quotes: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+            
+def show_all_quotes():
+    conn = None
+    
+    try:
+        conn = sqlite3.connect(DB_QUOTES_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type='table';
+        """)
+        
+        tables = cursor.fetchall()
+        
+        if tables:
+            print("Tables in database:")
+            for table in tables:
+                print(f"  - {table[0]}")
+            return tables
+        else:
+            print("No tables found.")
+            return None
+            
+    except sqlite3.Error as e:
+        print(f"Error loading tables: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+
+if __name__ == "__main__":
+    quote = get_random_quote()
+    if quote:
+        print(f'"{quote["quote"]}" - {quote["author"]}')
+    else:
+        print("No quote found.")

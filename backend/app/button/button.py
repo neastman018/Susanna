@@ -3,7 +3,15 @@ Button Class
 """
 import asyncio
 import time
-import RPi.GPIO as GPIO
+
+on_Pi = True
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    on_Pi = False
+    GPIO = None
+    print("Buttons not in use")
+
 
 class Button:
     """
@@ -77,6 +85,17 @@ async def button_poll_task(button_instance, poll_interval=0.01):
         print(button_instance.switch()) # or button_instance.press()
         # Yield control back to the event loop
         await asyncio.sleep(poll_interval)
+        
+async def fake_button_poll_task(poll_interval=0.01):
+    """
+    An async task that continuously polls the button state in a non-blocking loop.
+    """
+    print(f"Starting fake button polling...")
+    while True:
+        # Do Nothing
+        # Yield control back to the event loop
+        await asyncio.sleep(poll_interval)
+        
         
 async def wait_for_button_state_change(button_instance: Button):
     """

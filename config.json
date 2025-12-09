@@ -16,11 +16,9 @@
         "LONGITUDE": -77.1774930079404
     },
     "CALENDARS": {
-        "PRIMARY": [
-            {
+        "PRIMARY": {
                 "NAME": "Personal",
-                "ICAL_URL": "https://calendar.google.com/calendar/ical/nick.eastman%40youthapostles.org/private-4b21c6bc916ece0b6ced8f9227dfad14/basic.ics"
-            }
-        ]
+                "ICAL_URL": "https://calendar.google.com/calendar/ical/nick.eastman%40youthapostles.org/public/basic.ics"
+        }
     }   
 }

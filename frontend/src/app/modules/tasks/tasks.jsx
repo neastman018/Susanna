@@ -33,6 +33,8 @@ export default function TasksClient() {
     }
   };
 
+  console.log('Current tasks:', tasks);
+
   useEffect(() => {
     fetchTasks();
   }, []);
