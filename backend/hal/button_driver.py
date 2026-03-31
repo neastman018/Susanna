@@ -21,7 +21,7 @@ class ButtonDriver:
         self.hold = hold
         self.button = None
         
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     
         
