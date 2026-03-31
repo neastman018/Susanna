@@ -33,7 +33,7 @@ export default function Quotes() {
                     `,
                 padding: "35px",
                 }}>
-                "{quoteData.quote}" - {quoteData.author}
+                "{quoteData.quote} - {quoteData.author ? quoteData.author : "Unknown"}"
             </Typography>
         
     )}

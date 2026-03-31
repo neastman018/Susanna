@@ -14,6 +14,8 @@ export default function AlarmButton() {
   const { data: alarmData, isLoading, isError } = useAlarm();
   console.log("Alarm Data:", alarmData);
 
+
+
 return (
     <Button
     variant={getVariant(alarmData)}
@@ -31,7 +33,11 @@ return (
     ) : isError ? (
     <Typography>Error</Typography>
     ) : (
-    alarmData.alarm_time
+    alarmData === undefined ? (
+        <Typography>No Alarm Set</Typography>
+    ) : (
+        alarmData.alarm_time
+    )
     )}
 </Button>
 );

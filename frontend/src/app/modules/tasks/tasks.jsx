@@ -19,7 +19,7 @@ export default function TasksClient() {
 
       const res = await fetch(url);
       const data = await res.json();
-
+      console.log('Data from Tasks API:', data);
       if (data.authUrl) {
         setAuthUrl(data.authUrl);
       } else if (data.tasks) {
@@ -48,7 +48,7 @@ export default function TasksClient() {
     }
 
    if (authUrl) {
-          {authUrl && (
+    return (
         <Stack spacing={1}>
           <Typography>1. Open this URL and authorize:</Typography>
           <a href={authUrl} target="_blank" rel="noopener noreferrer">{authUrl}</a>
@@ -66,13 +66,13 @@ export default function TasksClient() {
             Submit Code
           </Button>
         </Stack>
-      )}
+    );
    }
   return (
    <Box
       sx={{
         display: 'inline-block',
-        backgroundImage: 'url(/todo_background.jpg)',
+        backgroundImage: 'url(/linedpaper.jpg)',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         borderRadius: 5,

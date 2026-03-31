@@ -7,53 +7,85 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'urn:ietf:wg:oauth:2.0:oob';
 const SCOPES = ['https://www.googleapis.com/auth/tasks.readonly'];
 
-// File to store the refresh token
 const TOKEN_PATH = path.join(process.cwd(), 'refresh_token.json');
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
 
-  const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+  const oAuth2Client = new google.auth.OAuth2(
+    CLIENT_ID, 
+    CLIENT_SECRET, 
+    REDIRECT_URI
+  );
 
-  // Step 1: If a refresh token is saved, use it
+  // 1. Load existing token
   if (fs.existsSync(TOKEN_PATH)) {
     const tokenData = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
-    oAuth2Client.setCredentials({ refresh_token: tokenData.refresh_token });
+    oAuth2Client.setCredentials(tokenData);
   }
 
-  // Step 2: If no refresh token or user submitted a new code
-  if (!oAuth2Client.credentials.refresh_token && code) {
+  // 2. Handle Auth Code exchange
+  if (code) {
     try {
       const { tokens } = await oAuth2Client.getToken(code);
       oAuth2Client.setCredentials(tokens);
-
-      // Save refresh token
-      if (tokens.refresh_token) {
-        fs.writeFileSync(TOKEN_PATH, JSON.stringify({ refresh_token: tokens.refresh_token }));
-      }
+      fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
     } catch (err) {
-      console.error(err);
-      return new Response(JSON.stringify({ error: 'Failed to get tokens.' }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Auth failed' }), { status: 500 });
     }
   }
 
-  // Step 3: If still no refresh token, return auth URL
-  if (!oAuth2Client.credentials.refresh_token) {
+  // 3. Auth Check
+  if (!oAuth2Client.credentials || !oAuth2Client.credentials.access_token) {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES,
+      prompt: 'consent'
     });
     return new Response(JSON.stringify({ authUrl }), { status: 200 });
   }
 
-  // Step 4: Fetch tasks
+  // 4. Fetch Tasks from ALL lists
   try {
     const service = google.tasks({ version: 'v1', auth: oAuth2Client });
-    const res = await service.tasks.list({ tasklist: '@default', maxResults: 50 });
-    return new Response(JSON.stringify({ tasks: res.data.items || [] }), { status: 200 });
-  } catch (err) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: 'Failed to fetch tasks.' }), { status: 500 });
+
+    // Step A: Get all task lists (folders)
+    const taskListsRes = await service.tasklists.list({ maxResults: 50 });
+    const lists = taskListsRes.data.items || [];
+
+    // Step B: Fetch tasks for every list in parallel
+    const allTasksPromises = lists.map(async (list) => {
+      try {
+        const response = await service.tasks.list({
+          tasklist: list.id,
+          maxResults: 50,
+          showCompleted: true,
+          showHidden: true
+        });
+        
+        // Tag each task with its list title so you know where it came from
+        return (response.data.items || []).map(task => ({
+          ...task,
+          listTitle: list.title 
+        }));
+      } catch (err) {
+        console.error(`Error fetching tasks for list ${list.title}:`, err.message);
+        return [];
+      }
+    });
+
+    // Step C: Wait for all lists to return and flatten the array
+    const results = await Promise.all(allTasksPromises);
+    const combinedTasks = results.flat(); // Merges [[list1], [list2]] into one [list1, list2]
+
+    return new Response(JSON.stringify({ tasks: combinedTasks }), { 
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('API error:', error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }

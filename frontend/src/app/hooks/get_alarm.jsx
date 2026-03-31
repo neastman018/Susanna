@@ -6,7 +6,7 @@ export const useAlarm = () => {
   return useQuery({
     queryKey: ["alarm"],
     queryFn: () => getAlarmVariables(),
-    refetchInterval: 2 * 1000, // automatically refetch every 2 seconds
+    refetchInterval: 1 * 60 * 1000, // automatically refetch every 1 minute
     refetchIntervalInBackground: true, // keeps refetching even if tab is not focused
   });
 };

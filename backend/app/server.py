@@ -1,102 +1,184 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile
+from contextlib import asynccontextmanager
+import datetime
+import os
+from fastapi import Depends, FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from pydantic import BaseModel
-import time
 from colorama import Fore, Style, init
-from io import BytesIO
-from datetime import datetime
-import ast
-from fastapi.responses import JSONResponse
-import json
-from app.alarm.alarm import Alarm
-from app.quotes.quotes import get_random_quote
+from typing import Dict, Any, Union
+from app.models.data_models import AlarmModel
 import asyncio
-from app.button.button import Button, wait_for_button_state_change, button_poll_task, fake_button_poll_task
+
+
+
 
 on_Pi = True
 try:
     import RPi.GPIO as GPIO
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
 except ImportError:
     on_Pi = False
     GPIO = None
-    print("RPi.GPIO not found. Running in non-Raspberry Pi mode.")
+    print("Buttons not in use")
+    
+# --- 1. Decide which driver to import ---
+if on_Pi:
+    # Attempt to import the real hardware driver
+    from hal.button_driver import ButtonDriver as ActualButtonDriver
+    print("Running in RPi Environment: Loading real GPIO drivers.")
+else:
+    # Fallback to the mock driver
+    from app.utils.mock_button_driver import MockButtonDriver as ActualButtonDriver
+    print("Running in Development Environment: Loading mock GPIO drivers.")
+    
+# --- Service and Model Imports ---
+from app.models.data_models import QuoteModel 
+from app.services.data_service import DataService 
+from app.services.application_state_service import ASService
+from app.services.alarm_service import AlarmService
+from app.services.gpio_service import GpioService, ButtonDriverInterface # Need ButtonDriverInterface for typing
 
-PIN1= 6
-PIN2 = 5
-ROTARY_PIN = 4
+    
+alarm1 = AlarmModel(
+    alarm_time="11:39",
+    start_date="2025-12-16",
+    repeat="Weekly",
+    day_of_week=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    sound="Thats_Life.mp3",
+    label="Weekday Wake Up",
+    armed=False
+)
 
-NUM_PIXELS = 60
-DEFAULT_COLOR = (255, 255, 255)
+alarm2 = AlarmModel(
+    alarm_time="16:24",
+    start_date="2025-12-16",
+    repeat="Weekly",
+    day_of_week=["Saturday", "Sunday"],
+    sound="Thats_Life.mp3",
+    label="Weekend Wake Up",
+    armed=False
+)
 
 
 
-test_alarm = Alarm()
-button1: Button = None       # <--- Declared, but NOT initialized here
-poll_task: asyncio.Task = None
+buttons: Dict[str, int] ={
+    'PrimaryButton': 14,
+    'SecondaryButton': 15,
+    'EncoderButton': 18,
+}
+
+# Global variables for service instances and the background task
+data_manager: DataService
+app_state: ASService
+alarm_manager: AlarmService
+gpio_manager: GpioService
+alarm_task: asyncio.Task  # Store the reference to the background task
 
 
+def get_data_service() -> DataService:
+    """Dependency function to inject the initialized DataService."""
+    if data_manager is None:
+        raise Exception(status_code=503, detail="DataService not initialized")
+    return data_manager 
+
+
+def get_alarm_service() -> AlarmService:
+    """Dependency function to inject the initialized AlarmService."""
+    if alarm_manager is None:
+        raise Exception(status_code=503, detail="AlarmService not initialized")
+    return alarm_manager 
+
+def get_state_service() -> AlarmService:
+    """Dependency function to inject the initialized AlarmService."""
+    if app_state is None:
+        raise Exception(status_code=503, detail="AlarmService not initialized")
+    return app_state 
+
+# --- Background Worker Function ---
+async def alarm_checker_worker(alarm_manager: AlarmService, app_state: ASService):
+    """
+    The continuous task that periodically calls the alarm checking logic.
+    """
+    CHECK_INTERVAL_SECONDS = 15  # Check the time every 15 seconds
+    
+    print(f"{Fore.YELLOW}Background Alarm Checker starting... Interval: {CHECK_INTERVAL_SECONDS}s{Style.RESET_ALL}")
+    
+    while True:
+        try:
+            # Call the synchronous alarm checking method
+            alarm_manager.activate_next_alarm(current_time=datetime.datetime.now())
+            
+            # Wait for the next interval
+            await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+        
+        except asyncio.CancelledError:
+            # Clean shutdown when the lifespan exits
+            print(f"{Fore.RED}Background Alarm Checker cancelled.{Style.RESET_ALL}")
+            break
+        except Exception as e:
+            # Log any unexpected errors and continue the loop
+            print(f"{Fore.RED}Alarm Checker encountered an error: {e}{Style.RESET_ALL}")
+            await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global data_manager, app_state, alarm_manager, gpio_manager, alarm_task
+
+    # --- 2. Initialize Dependencies ---
+    data_manager = DataService()
+    app_state = ASService()
+    alarm_manager = AlarmService(data_service=data_manager, as_service=app_state)
+    
+
+    # Clear and insert alarms for testing purposes
+    data_manager.clear_alarms()
+    data_manager.insert_alarm(alarm1)
+    data_manager.insert_alarm(alarm2)
+    
+    next_alarm = alarm_manager.find_next_alarm(datetime.date.today(), datetime.datetime.now().time())
+    app_state.set_alarm_time(next_alarm.alarm_time if next_alarm else "N/A")
+    app_state.set_alarm_armed(next_alarm.armed if next_alarm else False)
+    
+    # --- 3. Initialize ALL Button Drivers ---
+    button_drivers: Dict[str, ButtonDriverInterface] = {}
+    for name, pin in buttons.items():
+        # Instantiate the correct driver (Real or Mock) for each physical pin
+        driver_instance = ActualButtonDriver(pin=pin)
+        button_drivers[name] = driver_instance
+        print(f"Driver initialized: {name} on pin {pin} using {ActualButtonDriver.__name__}")
+
+
+    # --- 4. Initialize GPIO Service with the FULL Driver Map ---
+    gpio_manager = GpioService(
+        app_state=app_state, 
+        alarm_handler=alarm_manager, 
+        button_drivers=button_drivers # Pass the dictionary map
+    )
+    
+    # --- 5. Start Background Task ---
+    gpio_manager.start_polling() 
+    alarm_task = asyncio.create_task(alarm_checker_worker(alarm_manager=alarm_manager, app_state=app_state))
+    print(f"{Fore.YELLOW}FastAPI Server and Services Started!{Style.RESET_ALL}")
+    
+    yield
+    
+    # --- 6. Shutdown ---
+    print(f"{Fore.RED}--- FastAPI Shutdown Sequence ---{Style.RESET_ALL}")
+    
+    # CRITICAL CHANGE: Gracefully cancel the background task
+    alarm_task.cancel()
+    await asyncio.gather(alarm_task, return_exceptions=True)
+    await gpio_manager.shutdown()
+    
+    
+app = FastAPI(lifespan=lifespan)
+init(autoreset=True)
 
 
 origins = [
     "http://localhost:3000",
     "localhost:3000"
 ]
-
-class QuoteModel(BaseModel):
-    quote: str
-    author: str
-    
-class AlarmModel(BaseModel):
-    alarm_time: str
-    armed: bool # Remember an unauthorized armed alarm is a terror attack to sleeping roommates
-    
-# ==========================================================================================================
-# =================================== FastAPI Startup ======================================================
-# ==========================================================================================================
-    
-    
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global button1, poll_task
-    
-    with open('../config.json', 'r') as config_file:
-        config = json.load(config_file)
-        alarm_sound = config.get('ALARM', {}).get('ALARM_SOUND', [])
-        print(f"Wake up time for today: {alarm_sound}")
-        
-    if on_Pi:
-        button1 = Button(pin=PIN1)
-        button1.init_button()
-        # Startup code can go here
-        test_alarm.init("Peaky_Blinders.mp3")
-
-        poll_task = asyncio.create_task(button_poll_task(button1))
-        print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
-        
-        yield
-        # 🧹 SHUTDOWN: Cleanup Resources
-        print("Executing shutdown routine...")
-        if poll_task:
-            poll_task.cancel()
-        GPIO.cleanup()
-    else:
-        poll_task = asyncio.create_task(fake_button_poll_task())
-        print(f"{Fore.YELLOW}FastAPI Server Started in non-Raspberry Pi mode!{Style.RESET_ALL}")
-        
-        yield
-        # 🧹 SHUTDOWN: Cleanup Resources
-        print("Executing shutdown routine...")
-        if poll_task:
-            poll_task.cancel()
-            
-            
-    
-app = FastAPI(lifespan=lifespan)
-init(autoreset=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -105,84 +187,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-# Do not need unless I need data from the frontend
-# class ConnectionManager:
-#     def __init__(self):
-#         self.active_connections: list[WebSocket] = []
-    
-#     async def connect(self, websocket: WebSocket):
-#         await websocket.accept()
-#         self.active_connections.append(websocket)
-
-#     def disconnect(self, websocket: WebSocket):
-#         self.active_connections.remove(websocket)
-
-#     async def send_personal_message(self, message: str, websocket: WebSocket):
-#         await websocket.send_text(message)
-    
-#     #broadcasts to everyone awaiting messages
-#     async def broadcast(self, message: str):
-#         for connection in self.active_connections:
-#             await connection.send_text(message)
-
-    
-# manager = ConnectionManager()
-
 # ==========================================================================================================
-# =================================== Backend Events =======================================================
-# ==========================================================================================================
-
-
-# @app.on_event("startup")
-# async def startup_event():
-#     """
-#     Initializes GPIO and starts the button polling task when the server starts.
-#     """
-#     global button1
+# =================================== API ENDPOINTS ========================================================
+# =============================== Called Periodically ======================================================
+# ==========================================================================================================\
     
-#     # Use BCM numbering mode
-#     GPIO.setwarnings(False)
-#     GPIO.setmode(GPIO.BCM)
-    
-#     # Initialize the button on BCM pin 14 (example pin)
-#     button1 = Button(pin=14) 
-#     button1.init_button()
-    
-    
-#     # Start the continuous polling task as a background task.
-#     # This runs the button's synchronous polling logic without blocking the server.
-#     asyncio.create_task(button_poll_task(button1))
-#     print(f"{Fore.YELLOW}FastAPI Server and Button Polling Task Started!{Style.RESET_ALL}")
-
-# @app.on_event("shutdown")
-# def shutdown_event():
-#     """
-#     Cleans up GPIO when the server shuts down.
-#     """
-#     print(f"{Fore.YELLOW}FastAPI Server shutting down. Cleaning up GPIO.{Style.RESET_ALL}")
-#     GPIO.cleanup()
+# --- Dependency Injectors (Used by FastAPI Depends) ---
 
 
-# ==========================================================================================================
-# =================================== API ENDPOINTS =========================================================
-# ==========================================================================================================
 
 # Sends to quote to the frontend. Will be called periodically based on the hook
 @app.get("/api/quotes", tags=["info"])
-async def get_quote() -> dict:
-    quote_data = get_random_quote()
-    return {  
-        "quote": quote_data["quote"],
-        "author": quote_data["author"]
-    }
+async def get_quote(service: DataService = Depends(get_data_service)) -> QuoteModel:
+    
+    quote_data = service.get_random_quote()
+    print(quote_data)
+    return quote_data
 
 @app.get("/api/alarm", tags=["info"]) #API Endpoint is alarm
-async def get_alarm() -> dict:
-    # alarm_time = test_alarm.get_wake_up_time()
-    armed = True
+async def get_alarm(service: AlarmService = Depends(get_state_service)) -> dict:
+    
+    
+    next_alarm_time = service.get_alarm_time()
+    armed = service.get_alarm_armed()       
     
     return {
-        "alarm_time": "6:30 AM",
-        "armed": True
+        "alarm_time": next_alarm_time,
+        "armed": armed
     }   
+# ==========================================================================================================

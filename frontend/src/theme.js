@@ -9,6 +9,7 @@ const theme = createTheme({
     text: {
       primary: '#FFFFFF',
       secondary: '#B0B0B0',
+      contrast: '#000000',
     },
     primary: {
       main: '#50AD5C',
@@ -17,6 +18,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    fontFamilyComic: "'Comic Sans MS', 'Comic Sans', 'cursive'",
     h1: {
       fontSize: '5rem',
     },
@@ -39,6 +41,7 @@ const theme = createTheme({
       fontSize: '1.25rem',
     },
   },
+
 
   size : {
 

@@ -10,11 +10,12 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import '@fontsource/roboto'; // or another font
 import PrecipitationIndicator from "./modules/weather/rain.indicator";
-import { Google } from "@mui/icons-material";
+import { Google, Task } from "@mui/icons-material";
 import TasksClient from "./modules/tasks/tasks";
 import Quotes from "./modules/quotes/quotes";
 import Alarm from "./modules/alarm/alarm";
 import Memories from "./modules/memories/memories";
+import WordOfDay from "./modules/wordofday/wordofday";
 
 export default function Home() {
   return (
@@ -45,7 +46,7 @@ export default function Home() {
           <Quotes />
         </Grid>
         <Grid item xs={3} alignContent="right" sx={{paddingTop: 2, width: '25vw', display: 'flex', justifyContent: 'right', alignSelf: 'flex-start'}}>
-          {/* <TasksClient /> */}
+          <WordOfDay />
         </Grid>
       </Grid>
     </Grid>
