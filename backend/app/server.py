@@ -58,12 +58,10 @@ alarm2 = AlarmModel(
     armed=False
 )
 
-
-
 buttons: Dict[str, int] ={
-    'PrimaryButton': 14,
-    'SecondaryButton': 15,
-    'EncoderButton': 18,
+    'PrimaryButton': 6,
+    'SecondaryButton': 5,
+    'EncoderButton': 4,
 }
 
 # Global variables for service instances and the background task
