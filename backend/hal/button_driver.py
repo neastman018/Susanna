@@ -21,7 +21,9 @@ class ButtonDriver:
         self.hold = hold
         self.button = None
         
+        GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    
         
     def press(self) -> bool:
         if time.time() - self.last_triggered > self.hold:
