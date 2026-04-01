@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, Union
 
 from app.services.application_state_service import ASService
 from app.services.alarm_service import AlarmService
+from app.services.screen_service import ScreenService
     
 # The driver implements these methods this class tells the service to expect them
 class ButtonDriverInterface:
@@ -30,10 +31,12 @@ class GpioService:
         self, 
         app_state: ASService, 
         alarm_handler: AlarmService,
+        screen_handler: ScreenService,
         button_drivers: DriverMap # The driver instance is INJECTED
     ):
         self.app_state = app_state
         self.alarm_handler = alarm_handler
+        self.screen_handler = screen_handler
         self.buttons: DriverMap = button_drivers
         self._polling_task: Union[asyncio.Task, None] = None
 
@@ -73,6 +76,7 @@ class GpioService:
                     # CRITICAL: Run the synchronous driver method in a separate thread
                     # Using the 'press' method as defined in your interface
                     # This ensures the main event loop remains responsive.
+                    print("Awaiting Button Press")
                     is_pressed = await asyncio.to_thread(driver_instance.press)
                     
                     if is_pressed:
@@ -97,9 +101,14 @@ class GpioService:
         match button_name:
             case 'Primary':
                 print("Primary Button Pressed")
-                if self.app_state.state == 'ALARM_RINGING':
+                if self.app_state.get_alarm_ringing() is True:
                     print("Turning off alarm")
                     self.alarm_handler.alarm_stop()
+                else: 
+                    self.screen_handler.toggle_display()
+                    self.app_state.toggle_screen_state()
+
+                
             
             case 'Secondary':
                 print("Secondary Button Pressed")
