@@ -10,40 +10,34 @@ class ButtonDriver:
     @parameter state is whichever state variable the button is controlling
     @parameter last_press in the time of the last button press for debounce purposes
     """
-    def __init__(self, pin = 0, state = False, pressed = False, triggered = False, last_triggered = time.time(), last_press = time.time(), debounce : float  = 0.1, hold : float = 0.01):
+import time
+import RPi.GPIO as GPIO
+
+class ButtonDriver:
+    def __init__(self, pin, debounce=0.05):
         self.pin = pin
-        self.state = state
-        self.pressed = pressed
-        self.triggered = triggered # Will help filter out false positives
-        self.last_triggered = last_triggered
-        self.last_press = last_press
         self.debounce = debounce
-        self.hold = hold
-        self.button = None
-        
+        self.pressed = False
+        self.last_change_time = 0
+
         GPIO.setmode(GPIO.BCM)
+        # Use a real GPIO pin like 17, 27, or 22. Avoid 0 or 1.
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    
-        
+
     def press(self) -> bool:
-        if time.time() - self.last_triggered > self.hold:
-            self.triggered = False
+        current_state = GPIO.input(self.pin) == GPIO.HIGH
+        now = time.time()
 
-        if GPIO.input(self.pin) == GPIO.HIGH and (time.time() - self.last_press) >= self.debounce and not self.pressed:
-            if (time.time() - self.last_triggered) >= self.hold and not self.triggered:
-                self.last_triggered = time.time()
-                self.triggered = True
-                print("Button Triggered")
-            
-            elif self.triggered:
-                self.pressed = True
-                self.last_press = time.time()
-                self.triggered = False
-                print("Button Pressed")
-
-        elif GPIO.input(self.pin) == GPIO.LOW and (time.time() - self.last_press) >= self.debounce and self.pressed:
-            self.pressed = False
-            print("Button Released")
+        # If the state has changed (physical movement)
+        if current_state != self.pressed:
+            # Check if enough time has passed to ignore "noise" (debounce)
+            if (now - self.last_change_time) > self.debounce:
+                self.pressed = current_state
+                self.last_change_time = now
+                if self.pressed:
+                    print(f"Button on BCM {self.pin} Pressed")
+                else:
+                    print(f"Button on BCM {self.pin} Released")
 
         return self.pressed
 
