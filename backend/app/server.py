@@ -36,6 +36,7 @@ from app.services.data_service import DataService
 from app.services.application_state_service import ASService
 from app.services.alarm_service import AlarmService
 from app.services.gpio_service import GpioService, ButtonDriverInterface # Need ButtonDriverInterface for typing
+from app.services.screen_service import ScreenService
 
     
 alarm1 = AlarmModel(
@@ -68,6 +69,7 @@ buttons: Dict[str, int] ={
 data_manager: DataService
 app_state: ASService
 alarm_manager: AlarmService
+screen_manager: ScreenService
 gpio_manager: GpioService
 alarm_task: asyncio.Task  # Store the reference to the background task
 
@@ -90,6 +92,14 @@ def get_state_service() -> AlarmService:
     if app_state is None:
         raise Exception(status_code=503, detail="AlarmService not initialized")
     return app_state 
+
+def get_screen_service() -> ScreenService:
+    """Dependency function to inject the initialized ScreenService."""
+    if screen_manager is None:
+        raise Exception(status_code=503, detail="AlarmService not initialized")
+    return screen_manager
+
+
 
 # --- Background Worker Function ---
 async def alarm_checker_worker(alarm_manager: AlarmService, app_state: ASService):
@@ -126,6 +136,7 @@ async def lifespan(app: FastAPI):
     data_manager = DataService()
     app_state = ASService()
     alarm_manager = AlarmService(data_service=data_manager, as_service=app_state)
+    screen_manager = ScreenService(as_service=app_state)
     
 
     # Clear and insert alarms for testing purposes
@@ -150,6 +161,7 @@ async def lifespan(app: FastAPI):
     gpio_manager = GpioService(
         app_state=app_state, 
         alarm_handler=alarm_manager, 
+        screen_handler=screen_manager,
         button_drivers=button_drivers # Pass the dictionary map
     )
     
