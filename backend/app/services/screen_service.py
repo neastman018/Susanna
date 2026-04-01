@@ -3,8 +3,8 @@ from app.services.application_state_service import ASService
 from time import sleep
 
 class ScreenService:
-    def __init__(self, app_state: ASService):
-        self.app_state = app_state
+    def __init__(self, as_state: ASService):
+        self.app_state = as_state
         run("WAYLAND_DISPLAY='wayland-1' wlr-randr --output HDMI-A-1 --transform 270", shell=True)
 
 
