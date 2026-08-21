@@ -1,45 +1,17 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import { Box, Stack, Container } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ConstructionOutlined } from '@mui/icons-material';
+import { useWordOfDay } from '../../hooks/get_wordofday';
 import styles from './wordofday.modules.css'; // Import your CSS module for styling
 
 
 export default function WordOfDay() {
-    const [wordData, setWordData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    
+    const { data: wordData, isLoading, isError } = useWordOfDay();
 
-    const fetchWordOfDay = async () => {
-        setLoading(true);
-        try {
-            let url = '/api/wordofday';
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data) {
-                console.log('Data from API:', data);
-                setWordData(data);
-            } else {
-                console.log('Data from API was null');
-                setWordData({word: "Error fetching word"});
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    console.log('Word of the Day:', wordData);
-
-    useEffect(() => {
-        fetchWordOfDay();
-    }, []);
-
-    if (loading) {
+    if (isLoading || !wordData) {
         return (
         <Container maxWidth="sm" sx={{ mt: 4, textAlign: 'center' }}>
             <CircularProgress />
@@ -47,10 +19,10 @@ export default function WordOfDay() {
         );
     }
 
-    if (!wordData) {
+    if (isError || wordData.error) {
         return (
         <Container maxWidth="sm" sx={{ mt: 4, textAlign: 'center' }}>
-            <CircularProgress />
+            <Typography color="error">Could not fetch word of the day.</Typography>
         </Container>
         );
     }
@@ -77,7 +49,7 @@ export default function WordOfDay() {
             <Typography variant="h5" color="text.contrast" fontWeight="bold">Word of the Day</Typography>
             <hr className={styles.breakline} />
 
-            <Typography variant="h5" color="text.contrast" fontWeight="bold" sx={{fontFamily: 'fontFamilyComic', textTransform: 'capitalize'}}>{wordData ? wordData.word : 'Bumfuzzle'}</Typography>
+            <Typography variant="h5" color="text.contrast" fontWeight="bold" sx={{fontFamily: 'fontFamilyComic', textTransform: 'capitalize'}}>{wordData.word}</Typography>
              <Stack spacing={0}>
                 {wordData.definitions.map((def, idx) => {
                     let pofs;
@@ -101,7 +73,7 @@ export default function WordOfDay() {
 
                 })}
              </Stack>
-        
+
         </Stack>
         </Box>
     );

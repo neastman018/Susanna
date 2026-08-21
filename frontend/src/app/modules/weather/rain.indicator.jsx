@@ -16,7 +16,7 @@ const iconPadding = (boxWidth - iconSize) / 2;
 
 
 
-const PrecipitationIndicator = ({ icon, prop }) => {
+const PrecipitationIndicator = ({ iconSrc, prop }) => {
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex', width: '6rem', height: '6rem' }}>
       
@@ -61,7 +61,7 @@ const PrecipitationIndicator = ({ icon, prop }) => {
         }}
       >
         <img
-          src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+          src={iconSrc}
           alt='weather icon'
           style={{ width: `${iconSize}rem`, height: `${iconSize}rem` }}
         />

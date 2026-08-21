@@ -1,21 +1,20 @@
 'use client';
 import { Typography } from "@mui/material";
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useQuote } from "../../hooks/get_quote";
 import Card from "@mui/material/Card";
 import CircularProgress from '@mui/material/CircularProgress';
 
 
 export default function Quotes() {
-    const {data: quoteData, isLoading, isError, refetch} = useQuote();
-    console.log(quoteData);
+    const {data: quoteData, isLoading, isError} = useQuote();
 
     return (
         <Card sx = {{ backgroundColor: 'rgba(255, 255, 255, 0.0)', padding:2}}>
-        {isLoading ? (
-            <CircularProgress />
-        ) : isError ? (
+        {isError ? (
             <Typography>Error loading quote</Typography>
+        ) : isLoading || !quoteData ? (
+            <CircularProgress />
         ) : (
             <Typography
                 sx={{

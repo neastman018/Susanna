@@ -1,6 +1,6 @@
 'use client';
 import { Button, Typography } from "@mui/material";
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAlarm } from "../../hooks/get_alarm";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -12,9 +12,6 @@ function getVariant(alarmData) {
 
 export default function AlarmButton() {
   const { data: alarmData, isLoading, isError } = useAlarm();
-  console.log("Alarm Data:", alarmData);
-
-
 
 return (
     <Button

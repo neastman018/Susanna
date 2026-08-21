@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -9,7 +9,8 @@ import {
   Box,
 } from '@mui/material';
 import PrecipitationIndicator from './rain.indicator';
-import config from '../../../../../config.json';
+import { useWeather } from '../../hooks/get_weather';
+import config from '@app-config/config.json';
 
 const LAT_DEFAULT = config.WEATHER.LATITUDE;
 const LON_DEFAULT = config.WEATHER.LONGITUDE;
@@ -40,50 +41,30 @@ function findLow(weatherData) {
   return Math.min(...todayEntries.map((item) => item.main.temp_min));
 }
 
+function isNight(weatherData) {
+  const now = new Date();
+  const sunrise = new Date(weatherData.city.sunrise * 1000);
+  const sunset = new Date(weatherData.city.sunset * 1000);
+  return now < sunrise || now > sunset ? 'night' : 'day';
+}
+
+function getBackgroundImage(weatherData, condition) {
+  const night = isNight(weatherData);
+  return `/weatherphotos/${condition}_${night === 'night' ? 'Night' : 'Day'}.jpg`;
+}
+
+function getIconImage(weatherData, condition) {
+  const night = isNight(weatherData);
+  return `/weather_icons/${condition}_${night === 'night' ? 'Night' : 'Day'}.png`;
+}
+
 const WeatherToday = ({
   lat = LAT_DEFAULT,
   lon = LON_DEFAULT,
-  apiKey,
-  pollInterval = 10 * 60 * 1000, // default poll every 10 minutes
 }) => {
-  const [weatherData, setWeatherData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const intervalRef = useRef(null);
+  const { data: weatherData, isLoading, isError } = useWeather(lat, lon);
 
-  const fetchWeather = async () => {
-    try {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
-      );
-      const data = await res.json();
-      setWeatherData(data);
-    } catch (error) {
-      console.error('Failed to fetch weather:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // initial fetch
-    fetchWeather();
-
-    // set up polling
-    intervalRef.current = setInterval(() => {
-      fetchWeather();
-    }, pollInterval);
-
-    // cleanup on unmount
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [lat, lon, apiKey, pollInterval]);
-
-
-  console.log('Weather Data:', weatherData);
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ textAlign: 'center', mt: 4 }}>
         <CircularProgress />
@@ -91,7 +72,7 @@ const WeatherToday = ({
     );
   }
 
-  if (!weatherData || weatherData.cod !== '200') {
+  if (isError || !weatherData || weatherData.cod !== '200') {
     return (
       <Typography color="error" sx={{ mt: 4 }}>
         Could not fetch weather data.
@@ -99,9 +80,7 @@ const WeatherToday = ({
     );
   }
 
-const upcomingForcasts = weatherData.list.slice(0, 5);
-
-console.log('upcomingForcasts:', upcomingForcasts);
+  const upcomingForcasts = weatherData.list.slice(0, 5);
 
   if (upcomingForcasts.length === 0) {
     return (
@@ -111,35 +90,11 @@ console.log('upcomingForcasts:', upcomingForcasts);
     );
   }
 
-  const temps = upcomingForcasts.map((item) => item.main.temp);
-  const tempMin = Math.min(...temps);
-  const tempMax = Math.max(...temps);
-
   const current = upcomingForcasts[0];
   const temperature = current.main.temp;
   const feelsLike = current.main.feels_like;
   const condition = current.weather[0].main;
-  const icon = current.weather[0].icon;
-  console.log('Current weather condition:', condition, icon);
   const pop = current.pop ?? 0; // precipitation probability (might be undefined)
-
-  function getBackgroundImage(condition) {
-    const now = new Date();
-    const sunrise = new Date(weatherData.city.sunrise * 1000);
-    const sunset = new Date(weatherData.city.sunset * 1000);
-    const night = now < sunrise || now > sunset ? 'night' : 'day';
-    console.log('Background image condition:', condition, night);
-    return `/weatherphotos/${condition}_${night}.jpg`;
-  }
-
-  function getIconImage(condition) {
-  const now = new Date();
-  const sunrise = new Date(weatherData.city.sunrise * 1000);
-  const sunset = new Date(weatherData.city.sunset * 1000);
-  const night = now < sunrise || now > sunset ? 'night' : 'day';
-  return `/weather_icons/${condition}_${night}.jpg`;
-}
-
 
   return (
     <Box
@@ -158,7 +113,7 @@ console.log('upcomingForcasts:', upcomingForcasts);
       <Card
         sx={{
           color: 'white',
-          backgroundImage: `url('${getBackgroundImage(condition)}')`,
+          backgroundImage: `url('${getBackgroundImage(weatherData, condition)}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderRadius: 5,
@@ -201,7 +156,7 @@ console.log('upcomingForcasts:', upcomingForcasts);
             </Box>
 
             {/* Precipitation indicator stays right */}
-            <PrecipitationIndicator icon={icon} prop={pop} />
+            <PrecipitationIndicator iconSrc={getIconImage(weatherData, condition)} prop={pop} />
           </Box>
 
 
@@ -222,7 +177,7 @@ console.log('upcomingForcasts:', upcomingForcasts);
                 borderRadius: 2,
               }}
             >
-              
+
             {weatherData.city.name}
             </Typography>
             <Typography

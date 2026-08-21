@@ -19,7 +19,6 @@ export default function TasksClient() {
 
       const res = await fetch(url);
       const data = await res.json();
-      console.log('Data from Tasks API:', data);
       if (data.authUrl) {
         setAuthUrl(data.authUrl);
       } else if (data.tasks) {
@@ -32,8 +31,6 @@ export default function TasksClient() {
       setLoading(false);
     }
   };
-
-  console.log('Current tasks:', tasks);
 
   useEffect(() => {
     fetchTasks();

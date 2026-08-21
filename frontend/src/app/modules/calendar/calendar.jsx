@@ -11,10 +11,9 @@ import {
 } from '@mui/material';
 import styles from './calendar.module.css'; // Import your CSS module for styling
 import config from '@app-config/config.json';
-
+import { frostedCardSx } from '../../components/FrostedCard';
 
 const icalUrl = config.CALENDARS.PRIMARY.ICAL_URL;
-console.log('Using iCal URL:', icalUrl);
 
 
 const CalendarEvents = () => {
@@ -27,7 +26,6 @@ const CalendarEvents = () => {
         const res = await fetch(`/api/calendar?url=${encodeURIComponent(icalUrl)}`);
         const data = await res.json();
         setEvents(data);
-        console.log('Fetched events:', data);
       } catch (error) {
         console.error('Error fetching calendar:', error);
       } finally {
@@ -60,20 +58,12 @@ const CalendarEvents = () => {
       return start >= today && start < tomorrow;
     })
     .sort((a, b) => new Date(a.start) - new Date(b.start));
-  
-  console.log("Today's Events:", todaysEvents);
 
   return (
     <Box
       sx={{
         display: 'inline-block',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 5,
-        boxShadow: `
-          2.5px 5px 5px rgba(50, 50, 50, 0.6),
-          3px 6px 7px rgba(50, 50, 50, 0.4),
-          4px 8px 15px rgba(50, 50, 50, 0.3)
-        `,
+        ...frostedCardSx,
         width: '100%',
         padding: 2,
       }}

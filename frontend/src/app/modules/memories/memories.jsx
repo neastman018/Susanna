@@ -1,61 +1,55 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-} from '@mui/material';
+import { Card, Box } from '@mui/material';
+import { frostedCardSx } from '../../components/FrostedCard';
 
 const imageHeight = 15; // in rem
 
-function useRandomBackgroundImage(intervalMs = 5 * 60 * 1000) {
-  const images = [
-    '/memories/photo1.jpg',
-    '/memories/photo2.jpg',
-    '/memories/photo3.jpg',
-    '/memories/photo4.jpg',
-    '/memories/photo5.jpg',
-    '/memories/photo6.jpg',
-    '/memories/photo7.jpg',
-    '/memories/photo8.jpg',
-  ];
-
-
-
+function useRotatingBackgroundImage(intervalMs = 5 * 60 * 1000) {
+  const [images, setImages] = useState([]);
   const [backgroundImage, setBackgroundImage] = useState(null);
 
   useEffect(() => {
-    // pick first random image when client mounts
-    const randomIndex = Math.floor(Math.random() * images.length);
-    setBackgroundImage(images[randomIndex]);
+    let cancelled = false;
+    fetch('/api/memories')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data.images)) {
+          setImages(data.images);
+        }
+      })
+      .catch((err) => console.error('Failed to fetch memories:', err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    // change periodically
-    const interval = setInterval(() => {
+  useEffect(() => {
+    if (images.length === 0) return;
+
+    const pickRandom = () => {
       const randomIndex = Math.floor(Math.random() * images.length);
       setBackgroundImage(images[randomIndex]);
-    }, intervalMs);
+    };
+
+    pickRandom();
+    const interval = setInterval(pickRandom, intervalMs);
 
     return () => clearInterval(interval);
-  }, [intervalMs]);
+  }, [images, intervalMs]);
 
   return backgroundImage;
 }
 
 export default function Memories() {
-  const bgImage = useRandomBackgroundImage();
+  const bgImage = useRotatingBackgroundImage();
 
   return (
     <Box
       sx={{
         display: 'inline-block',
-        borderRadius: 5,
-        boxShadow: `
-          2.5px 5px 5px rgba(50, 50, 50, 0.6),
-          3px 6px 7px rgba(50, 50, 50, 0.4),
-          4px 8px 15px rgba(50, 50, 50, 0.3)
-        `,
+        ...frostedCardSx,
         width: `${imageHeight * 1.5}rem`,
         height: `${imageHeight * 1}rem`,
       }}
